@@ -23,6 +23,15 @@ class ProxyHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        # Health check endpoint
+        if self.path == '/health':
+            self.send_response(200)
+            self.send_cors()
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"status": "ok"}')
+            return
+
         url = TARGET + self.path
         try:
             req = urllib.request.Request(url, headers={"accept": "*/*"})
