@@ -79,7 +79,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"error": str(e)}).encode())
 
 if __name__ == "__main__":
-    print(f"✅ eReceipt proxy running at http://localhost:{PORT}")
+    port = int(os.environ.get("PORT", 5000))
+    print(f"✅ eReceipt proxy running at http://localhost:{port}")
     print(f"   Forwarding requests to {TARGET}")
-    print(f"   Press Ctrl+C to stop.\n")
-    HTTPServer(("localhost", PORT), ProxyHandler).serve_forever()
+    HTTPServer(("0.0.0.0", port), ProxyHandler).serve_forever()
