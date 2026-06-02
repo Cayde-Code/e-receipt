@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UG eReceipt Tool</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --accent: #00c853;
+    --accent-dim: #00c85322;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --error: #f85149;
+    --warning: #d29922;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .header {
+    margin-bottom: 2.5rem;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-left: 3rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.95rem;
+    padding: 0.65rem 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  input[type="text"]::placeholder {
+    color: var(--muted);
+    opacity: 0.5;
+  }
+
+  button {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.65rem 1.25rem;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  button:hover { opacity: 0.88; }
+  button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.25rem 0;
+  }
+
+  /* Result section */
+  .result { display: none; }
+  .result.visible { display: block; }
+
+  .result-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .linkid-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    word-break: break-all;
+  }
+
+  .url-box {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--accent);
+    word-break: break-all;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .url-box:hover { background: #00c85333; }
+
+  .action-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    flex: 1;
+  }
+
+  .btn-secondary:hover { background: var(--border); opacity: 1; }
+
+  .btn-open {
+    flex: 1;
+  }
+
+  /* Status */
+  .status {
+    display: none;
+    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .status.error {
+    display: block;
+    background: #f8514922;
+    border: 1px solid var(--error);
+    color: var(--error);
+  }
+
+  .status.loading {
+    display: block;
+    background: #d2992222;
+    border: 1px solid var(--warning);
+    color: var(--warning);
+  }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+  }
+
+  /* Copy toast */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(2rem);
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-top: 1.5rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🧾</div>
+      <h1>eReceipt Lookup</h1>
+    </div>
+    <div class="subtitle">Union Gas · Internal Tool</div>
+  </div>
+
+  <div class="card">
+    <label for="invoiceInput">Sales Order / Invoice Number</label>
+    <div class="input-row">
+      <input
+        type="text"
+        id="invoiceInput"
+        placeholder="e.g. SO26181969UE"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button id="fetchBtn" onclick="fetchReceipt()">Fetch</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="result" id="result">
+      <hr class="divider">
+
+      <div class="result-label">Link ID</div>
+      <div class="linkid-box" id="linkidBox">—</div>
+
+      <div class="result-label">eReceipt URL</div>
+      <div class="url-box" id="urlBox" onclick="copyUrl()" title="Click to copy">—</div>
+
+      <div class="action-row">
+        <button class="btn-secondary" onclick="copyUrl()">📋 Copy URL</button>
+        <button class="btn-open btn-primary" onclick="openUrl()">↗ Open Receipt</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Data from ereceipt.azurewebsites.net · Press Enter to fetch
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied to clipboard!</div>
+
+<script>
+  const BASE = 'http://localhost:5000';
+  let currentUrl = '';
+
+  document.getElementById('invoiceInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') fetchReceipt();
+  });
+
+  async function fetchReceipt() {
+    const invoice = document.getElementById('invoiceInput').value.trim();
+    if (!invoice) return;
+
+    const btn = document.getElementById('fetchBtn');
+    const status = document.getElementById('status');
+    const result = document.getElementById('result');
+
+    btn.disabled = true;
+    result.classList.remove('visible');
+    status.className = 'status loading';
+    status.innerHTML = '<span class="spinner"></span> Fetching receipt...';
+
+    try {
+      const res = await fetch(`${BASE}/api/receipt/getLink/${encodeURIComponent(invoice)}`, {
+        method: 'GET',
+        headers: { 'accept': '*/*' }
+      });
+
+      if (res.status === 404) {
+        // Try to save first, then re-fetch
+        status.innerHTML = '<span class="spinner"></span> Receipt not found — attempting to generate...';
+        const saved = await fetch(`${BASE}/api/receipt/save`, {
+          method: 'POST',
+          headers: { 'accept': '*/*', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_no: invoice })
+        });
+
+        if (saved.ok) {
+          const savedData = await saved.json();
+          if (savedData.linkid) {
+            showResult(savedData.linkid);
+            return;
+          }
+        }
+        throw new Error('Receipt not found. Ensure the order status is "Fulfilled" before generating an e-receipt.');
+      }
+
+      if (!res.ok) throw new Error(`Server returned ${res.status}. Check the order number and try again.`);
+
+      const data = await res.json();
+      if (!data.linkid) throw new Error('No linkid returned. The receipt may not exist yet.');
+
+      showResult(data.linkid);
+
+    } catch (err) {
+      status.className = 'status error';
+      status.textContent = '⚠ ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function showResult(linkid) {
+    const status = document.getElementById('status');
+    const result = document.getElementById('result');
+
+    currentUrl = `https://ereceipt.azurewebsites.net/ereceipt/${linkid}`;
+
+    document.getElementById('linkidBox').textContent = linkid;
+    document.getElementById('urlBox').textContent = currentUrl;
+
+    status.className = 'status';
+    status.style.display = 'none';
+    result.classList.add('visible');
+  }
+
+  function copyUrl() {
+    if (!currentUrl) return;
+    navigator.clipboard.writeText(currentUrl).then(() => {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    });
+  }
+
+  function openUrl() {
+    if (currentUrl) window.open(currentUrl, '_blank');
+  }
+</script>
+</body>
+</html>
