@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: ereceipt-proxy
+    runtime: python
+    buildCommand: ""
+    startCommand: python proxy.py
